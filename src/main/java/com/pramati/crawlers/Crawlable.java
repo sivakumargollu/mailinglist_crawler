@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Vector;
+import java.util.concurrent.CountDownLatch;
 
 import javax.rmi.CORBA.Util;
 import javax.xml.parsers.DocumentBuilder;
@@ -25,13 +26,48 @@ import com.pramati.crawlers.beans.Utils;
 
 /**
  * @author sivag
+ * Base class to connect to remote.
+ * {@link ConversationCrawler} and {@link Mail} are the subclasses of the crawler.
+ * 
  * 
  */
 public abstract class Crawlable implements Runnable {
 
+	
+	protected String month = "";
+	protected String year = "";
+	
+
+	public String getMonth() {
+		return month;
+	}
+
+	public void setMonth(String month) {
+		this.month = month;
+	}
+
+	public String getYear() {
+		return year;
+	}
+
+	public void setYear(String year) {
+		this.year = year;
+	}
+
+	/**
+	 * At which crawling must be done.
+	 */
 	protected String url = "";
-	private HashMap<String,Conversation> conversations = null;
+	/**
+	 * Holds the key-value pairs of conversation-subject and conversation details.
+	 */
+	protected HashMap<String, Conversation> conversations = null;
+	/**
+	 * It is  mirror the value of the pagination displaying in the web-site.
+	 * Suppose there  are 500 mails available in month december and these 500 mails are arranged in 4 pages with pagination. Then this pageCount value holds that value 4
+	 */
 	protected int pagesCount = 3;
+	protected CountDownLatch latch = null;
 
 	/**
 	 * @return the url
@@ -51,7 +87,7 @@ public abstract class Crawlable implements Runnable {
 	/**
 	 * @return the conversations
 	 */
-	public HashMap<String,Conversation>  getConversations() {
+	public HashMap<String, Conversation> getConversations() {
 		return conversations;
 	}
 
@@ -59,7 +95,7 @@ public abstract class Crawlable implements Runnable {
 	 * @param conversations
 	 *            the conversations to set
 	 */
-	public void setConversations(HashMap<String,Conversation>  conversations) {
+	public void setConversations(HashMap<String, Conversation> conversations) {
 		this.conversations = conversations;
 	}
 
@@ -88,83 +124,6 @@ public abstract class Crawlable implements Runnable {
 		}
 		return response;
 
-	}
-
-	/***
-	 * 
-	 * @param xml
-	 *            1. It updates the default page count new value from response
-	 *            xml 2. Also it instantiate and initialize conversations
-	 *            objects
-	 */
-	public void setConversations(String xml) {
-		try {
-			// File f = new
-			// File("/home/sivag/Desktop/EclipseProjects/sampleXMl.xml");
-			InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory
-					.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			Document doc = dBuilder.parse(inputStream);
-			doc.getDocumentElement().normalize();
-			NodeList nodeList = doc.getElementsByTagName("index");
-			for (int i = 0; i < nodeList.getLength(); i++) {
-				Node node = nodeList.item(i);
-				if (node.getNodeType() == Node.ELEMENT_NODE) {
-					Element e = (Element) node;
-					System.out.println("page..." + e.getAttribute("page"));
-					System.out.println("pages..." + e.getAttribute("pages"));
-					pagesCount = Integer.parseInt(e.getAttribute("pages"));
-					NodeList messages = e.getElementsByTagName("message");
-					for (int j = 0; j < messages.getLength(); j++) {
-						Node messageNode = messages.item(j);
-						if (messageNode.getNodeType() == messageNode.ELEMENT_NODE) {
-							
-							Element messageElement = (Element) messageNode;
-							String subject = Utils.getValue("subject",messageElement);
-							Conversation conversation = this.getConversion(subject);
-							Mail mail = new Mail();
-							String id = messageElement.getAttribute("id");
-							String from = Utils.getValue("from", messageElement);
-							String date = Utils.getValue("date", messageElement);
-							mail.setAuthor(from);
-							mail.setId(id);
-							mail.setTime(date);
-							conversation.getMails().add(mail);
-
-						}
-					}
-
-				}
-
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	
-	
-	/**
-	 * 
-	 * @param subject
-	 * @return Conversation object
-	 * If given subject as key not existed in the conversations then new mapping will be created and return the new conversation object
-	 * if already existed then old one will be returned
-	 * 
-	 */
-	public Conversation getConversion(String subject){
-		Conversation conversation = null;
-	    if(conversations.containsKey(subject)){
-	    	conversation = conversations.get(subject);
-	    }
-	    else{
-	    	conversation = new Conversation();
-	    	conversation.setSubject(subject);
-	    	conversations.put(subject, conversation);
-	    }
-	    return conversation;
-		
 	}
 
 }

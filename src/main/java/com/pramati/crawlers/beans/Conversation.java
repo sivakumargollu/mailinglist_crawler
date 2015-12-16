@@ -5,18 +5,24 @@ import java.util.HashSet;
 
 public class Conversation {
 	
-	private String month = "";
+	protected String month = "";
 	private String year = "";
 	private String subject = "";
 	private HashSet<Mail> mails = new HashSet<Mail>();
 	
-	
-	
-	
-	
-	
-	
-	
+
+	public String getMonth() {
+		return month;
+	}
+	public void setMonth(String month) {
+		this.month = month;
+	}
+	public String getYear() {
+		return year;
+	}
+	public void setYear(String year) {
+		this.year = year;
+	}
 	/**
 	 * @return the mails
 	 */
