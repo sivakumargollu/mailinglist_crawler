@@ -21,13 +21,12 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import com.pramati.crawlers.beans.Conversation;
-import com.pramati.crawlers.beans.Mail;
 import com.pramati.crawlers.beans.Utils;
 
 /**
  * @author sivag
  * Base class to connect to remote.
- * {@link ConversationCrawler} and {@link Mail} are the subclasses of the crawler.
+ * {@link ConversationsBuilder} and {@link Mail} are the subclasses of the crawler.
  * 
  * 
  */

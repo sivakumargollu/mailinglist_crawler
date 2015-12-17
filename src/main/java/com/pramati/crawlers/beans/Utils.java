@@ -20,7 +20,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.pramati.crawlers.ConfigProperties;
 
 public class Utils {
 
@@ -132,8 +131,7 @@ public class Utils {
 	 */
 	public static boolean createDirectory(String path) throws IOException {
 		boolean created = true;
-		
-			System.out.println("Path " + path);
+			//System.out.println("Path " + path);
 			File f = new File(path);
 			if (!f.exists()) {
 				if (!f.mkdirs())
@@ -141,6 +139,21 @@ public class Utils {
 			}
 		return created;
 
+	}
+	/**
+	 * 
+	 * @param path
+	 * If given path not existed,  will creates directory with given path and checks its permissions.
+	 * @throws IOException if given path does not have write permission.
+	 * 
+	 */
+	public static void checkWritePermissions(String path) throws IOException {
+		File f = new File(path);
+		if(!f.exists())
+			Utils.createDirectory(path);
+		if(!f.canWrite()){
+			throw new IOException(path+ "is not existed or not writable.");
+		}
 	}
 
 	/**
@@ -171,7 +184,6 @@ public class Utils {
 		Pattern pattern = Pattern.compile(regEx);
 		Matcher matcher = pattern.matcher(subject);
 		if (matcher.lookingAt()) {
-			System.out.println("Matching");
 			subject = subject.replaceFirst(regEx, "");
 		}
 		return subject.trim();

@@ -3,6 +3,8 @@ package com.pramati.crawlers.beans;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import com.pramati.crawlers.Mail;
+
 public class Conversation {
 	
 	protected String month = "";
@@ -14,6 +16,10 @@ public class Conversation {
 	public String getMonth() {
 		return month;
 	}
+	/**
+	 * 
+	 * @param month
+	 */
 	public void setMonth(String month) {
 		this.month = month;
 	}
