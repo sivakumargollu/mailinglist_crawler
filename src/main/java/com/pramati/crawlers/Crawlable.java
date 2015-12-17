@@ -1,27 +1,12 @@
 package com.pramati.crawlers;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.InputStream;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
-
-import javax.rmi.CORBA.Util;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 import com.pramati.crawlers.beans.Conversation;
-import com.pramati.crawlers.beans.Utils;
 
 /**
  * @author sivag

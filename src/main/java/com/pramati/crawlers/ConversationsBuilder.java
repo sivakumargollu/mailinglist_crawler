@@ -2,8 +2,6 @@ package com.pramati.crawlers;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.Vector;
-import java.util.concurrent.CountDownLatch;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -79,7 +77,7 @@ public class ConversationsBuilder extends Crawlable {
 					NodeList messages = e.getElementsByTagName("message");
 					for (int j = 0; j < messages.getLength(); j++) {
 						Node messageNode = messages.item(j);
-						if (messageNode.getNodeType() == messageNode.ELEMENT_NODE) {
+						if (messageNode.getNodeType() == Node.ELEMENT_NODE) {
 
 							Element messageElement = (Element) messageNode;
 							String subject = Utils.getValue("subject",

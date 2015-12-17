@@ -1,6 +1,5 @@
 package com.pramati.crawlers.beans;
 
-import java.util.HashMap;
 import java.util.HashSet;
 
 import com.pramati.crawlers.Mail;

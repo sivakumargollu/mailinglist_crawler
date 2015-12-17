@@ -8,18 +8,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.management.monitor.Monitor;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
 
 public class Utils {
 
@@ -77,7 +72,7 @@ public class Utils {
 		String baseUrl = configProperties.getBaseUrl();
 		String[] months = configProperties.getMonth().split(",");
 		ArrayList<String> urls = new ArrayList<String>(11);
-		String url = "";
+		//String url = "";
 		for (int i = 0; i < months.length; i++) {
 			if (months[i] != "" && !months[i].equals("") && months[i] != null)
 				urls.add(baseUrl + "/" + configProperties.getYear() + months[i]
@@ -131,28 +126,32 @@ public class Utils {
 	 */
 	public static boolean createDirectory(String path) throws IOException {
 		boolean created = true;
-			//System.out.println("Path " + path);
-			File f = new File(path);
-			if (!f.exists()) {
-				if (!f.mkdirs())
-					throw new IOException("Could not create directory at given path");
-			}
+		// System.out.println("Path " + path);
+		File f = new File(path);
+		if (!f.exists()) {
+			if (!f.mkdirs())
+				throw new IOException(
+						"Could not create directory at given path");
+		}
 		return created;
 
 	}
+
 	/**
 	 * 
 	 * @param path
-	 * If given path not existed,  will creates directory with given path and checks its permissions.
-	 * @throws IOException if given path does not have write permission.
+	 *            If given path not existed, will creates directory with given
+	 *            path and checks its permissions.
+	 * @throws IOException
+	 *             if given path does not have write permission.
 	 * 
 	 */
 	public static void checkWritePermissions(String path) throws IOException {
 		File f = new File(path);
-		if(!f.exists())
+		if (!f.exists())
 			Utils.createDirectory(path);
-		if(!f.canWrite()){
-			throw new IOException(path+ "is not existed or not writable.");
+		if (!f.canWrite()) {
+			throw new IOException(path + "is not existed or not writable.");
 		}
 	}
 
@@ -163,9 +162,10 @@ public class Utils {
 	 */
 	public static int getMailsCount(HashMap<String, Conversation> conversations) {
 		int count = 0;
-		for (Map.Entry<String, Conversation> entry : conversations.entrySet()) {
-			Conversation conversation = entry.getValue();
-			count += conversation.getMails().size();
+		Iterator<String> iterator = conversations.keySet().iterator();
+		while (iterator.hasNext()) {
+		//	Conversation conversation = conversations.get(iterator.next()).getMails().size();
+			count += conversations.get(iterator.next()).getMails().size();
 		}
 		return count;
 	}
@@ -173,7 +173,7 @@ public class Utils {
 	/**
 	 * 
 	 * @param subject
-	 * @return Subject is the unique for mails of a conversation. Except that
+	 * @return Subject is the unique for all mails of a conversation. Except that
 	 *         replies mails contains Re: in the starting. This function will
 	 *         remove the "Re:" or "re:" or "RE:" patterns in the starting and
 	 *         returns the remaining string after trimming white spaces
@@ -188,12 +188,14 @@ public class Utils {
 		}
 		return subject.trim();
 	}
+
 	/**
 	 * 
 	 * @param month
-	 * @return true if and only if the given string matches 00 to 12 numbers in string format.s
+	 * @return true if and only if the given string matches 00 to 12 numbers in
+	 *         string format.s
 	 */
-	public static boolean isValidMonth(String month){
+	public static boolean isValidMonth(String month) {
 		return month.matches("^[0][1-9]|^[1][0-2]");
 	}
 

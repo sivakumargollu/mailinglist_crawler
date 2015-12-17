@@ -1,37 +1,24 @@
 
 package com.pramati.crawlers;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.ConnectException;
-import java.nio.file.InvalidPathException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
 
 import com.pramati.crawlers.beans.ConfigProperties;
 import com.pramati.crawlers.beans.Conversation;
 import com.pramati.crawlers.beans.Utils;
-import com.pramati.crawlers.*;
 
 /**
  *  It downloads mails from
@@ -73,7 +60,7 @@ public class MailingListDownLoader {
 	 *            {@link ConfigProperties} instance
 	 * @return String message describes the execution status.
 	 * Download mails and store them under given path as text
-	 *              files. The following operation will taken place in the same
+	 *              files. The following operations will be taken place in the same
 	 *              sequence. <br> 1.Checks given path writable or not. If not
 	 *              writable then execution process halts by returning error
 	 *              message. <br> 2. Starts the crawling process to determine the
@@ -83,7 +70,7 @@ public class MailingListDownLoader {
 	 *              remote-website. <br> 4. Create a directory for each and every
 	 *              unique subject(conversation) under which each mail will be
 	 *              saved as .txt file.<br> For completion of 2nd and 3rd steps
-	 *              program waits 30 and 240 seconds respectively. If not
+	 *              program waits 30 and 120 seconds respectively. If not
 	 *              completed in stipulated time then execution will proceeded
 	 *              with the available data at that moment.
 	 * 
@@ -93,17 +80,16 @@ public class MailingListDownLoader {
 		try {
 			System.out.println("Starting!!");
 			Utils.checkWritePermissions(configProperties.getPath());
-			MailingListDownLoader app = new MailingListDownLoader();
-			app.configProperties = configProperties;
-			app.initiateCrawlingConversations();
+			//MailingListDownLoader app = new MailingListDownLoader();
+			this.configProperties = configProperties;
+			this.initiateCrawlingConversations();
 			System.out.println("Waiting to crawl conversations"+new Date().toString());
-			app.latch.await(30, TimeUnit.SECONDS);
+			this.latch.await(30, TimeUnit.SECONDS);
 			System.out.println("Total conversations "+conversations.size());
-			app.initiateCrawlingMails();
+			this.initiateCrawlingMails();
 			System.out.println("Waiting to crawl mails"+new Date().toString());
-			app.latch.await(120, TimeUnit.SECONDS);
-			
-			app.logMails(configProperties.getPath());
+			this.latch.await(120, TimeUnit.SECONDS);
+			this.logMails(configProperties.getPath());
 		} catch (ParseException e) {
 			response = e.getMessage();
 			e.printStackTrace();
@@ -123,7 +109,7 @@ public class MailingListDownLoader {
 	 * Using month and year attribute values, Urls will be framed so that each
 	 * url can crawl a month. If a invalid month value occur i.e not between
 	 * 00-12 then it will ignored. Each month url crawling will be handled as
-	 * separate task by one of thread thread from {@link ExecutorService} pool
+	 * separate task by one of thread  from {@link ExecutorService} pool
 	 * 
 	 */
 	public void initiateCrawlingConversations() {
@@ -167,13 +153,13 @@ public class MailingListDownLoader {
 	public void logMails(String path) throws ParseException, IOException {
 		Utils.createDirectory(path);
 		for (Map.Entry<String, Conversation> entry : conversations.entrySet()) {
-			String key = entry.getKey();
+			String subject = entry.getKey();
 			Conversation conversation = entry.getValue();
-			String conversationDirectory = path + File.separator+conversation.getYear()+File.separator+conversation.getMonth() + File.separator + key;
+			String conversationDirectory = path + File.separator+conversation.getYear()+File.separator+conversation.getMonth() + File.separator + Utils.replaceFileSystemChars(subject);
 			Utils.createDirectory(conversationDirectory);
 			//System.out.println(conversationDirectory);
-			HashSet<Mail> mails = conversation.getMails();
-			Iterator<Mail> iterator = mails.iterator();
+			//HashSet<Mail> mails = conversation.getMails();
+			Iterator<Mail> iterator = conversation.getMails().iterator();
 			while (iterator.hasNext()) {
 				Mail mail = iterator.next();
 				String fileName = conversationDirectory+ File.separator+ (Utils.replaceFileSystemChars(mail.getAuthor())+ "__" + (mail.getTime())) + ".txt";

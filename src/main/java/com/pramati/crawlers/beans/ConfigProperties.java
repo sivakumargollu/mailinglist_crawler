@@ -4,14 +4,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 
 
 public class ConfigProperties {
 
 	private String year = "2014";
-	private String month = "00";
+	private String month = "00	";
 	private String baseUrl = "https://mail-archives.apache.org/mod_mbox/maven-users/";
 	private String path = System.getProperty("user.home")+File.separator+"MavneMailingList";
 	private String mailUrl = "https://mail-archives.apache.org/mod_mbox/maven-users/";
