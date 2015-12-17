@@ -1,5 +1,7 @@
-#excluding .setting files
-.setting
+excluding .setting files
+#run git rm --cache to remove previous cache.
+.settings
 .classpath
 .project
+target/**
 
