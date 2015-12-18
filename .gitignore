@@ -4,4 +4,6 @@ excluding .setting files
 .classpath
 .project
 target/**
+.sw*
+*.*~
 

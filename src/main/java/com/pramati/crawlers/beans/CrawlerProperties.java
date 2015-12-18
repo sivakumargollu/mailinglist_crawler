@@ -9,7 +9,7 @@ import java.util.Properties;
 
 import com.pramati.crawlers.MailingListDownLoader;
 
-
+	
 public class CrawlerProperties {
 
 	private String year = "2014";
@@ -101,7 +101,7 @@ public class CrawlerProperties {
 	 *           
 	 */
 	public void  setMonth(String month) {
-		if(month.equals("00"))
+		if(month.trim().equals("00"))
 			this.month = "01,02,03,04,05,06,07,08,09,10,11,12";
 		else 
 			this.month = month;
@@ -128,8 +128,7 @@ public class CrawlerProperties {
 		     properties.load(new FileInputStream(propertiesPath+"/crawler.properties"));
 			
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			System.out.println("File not found exception");
+			System.out.println("Properties file not available,Contine with default settings");
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
@@ -137,7 +136,9 @@ public class CrawlerProperties {
 			System.out.println(e.getMessage());
 		}
 		if(properties.getProperty("month") != null && properties.getProperty("month").trim() != "")
-		crawlerProperties.setMonth(properties.getProperty("month"));
+		   crawlerProperties.setMonth(properties.getProperty("month"));
+		else
+		   crawlerProperties.setMonth("00");
 		if(properties.getProperty("year") != null && properties.getProperty("year").trim() != "")
 		crawlerProperties.setYear(properties.getProperty("year"));
 		if(properties.getProperty("logpath") != null && properties.getProperty("logpath").trim() != "")

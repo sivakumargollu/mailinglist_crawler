@@ -76,7 +76,7 @@ public class MailingListDownLoader {
 	 * 
 	 */
 	public String downLoadMails(CrawlerProperties crawlerProperties) {
-		String response = "Downloading and files creation completed!!!";
+		String response = "Downloading and files creation completed!!! Path :"+crawlerProperties.getPath();
 		try {
 			System.out.println("Year--"+crawlerProperties.getYear());
 			System.out.println("Month--"+crawlerProperties.getMonth());
