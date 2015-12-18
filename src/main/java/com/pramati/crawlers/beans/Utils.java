@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.jsoup.Jsoup;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -40,7 +41,12 @@ public class Utils {
 	 *         resultant
 	 */
 	public static String replaceFileSystemChars(String str) {
-		return str.replaceAll("(\\/)", "_");
+		String regEx = "";
+		if(SystemUtils.IS_OS_WINDOWS)
+			 regEx = "\\";
+		if(SystemUtils.IS_OS_LINUX)
+			 regEx = "(\\/)";
+		return str.replaceAll(regEx, "_");
 	}
 
 	/**
@@ -127,13 +133,14 @@ public class Utils {
 	 */
 	public static boolean createDirectory(String path) throws IOException {
 		boolean created = true;
-		// System.out.println("Path " + path);
 		File f = new File(path);
 		if (!f.exists()) {
 			if (!f.mkdirs())
 				throw new IOException(
 						"Could not create directory at given path");
+			
 		}
+		Utils.checkWritePermissions(path);
 		return created;
 
 	}
@@ -182,6 +189,7 @@ public class Utils {
 	 */
 	public static String nomalizeSubject(String subject) {
 
+		
 		String regEx = "(\\s*re\\s*:\\s*)|(\\s*RE\\s*:\\s*)|(\\s*Re\\s*:\\s*)";
 		Pattern pattern = Pattern.compile(regEx);
 		Matcher matcher = pattern.matcher(subject);

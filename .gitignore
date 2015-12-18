@@ -6,4 +6,5 @@ excluding .setting files
 target/**
 .sw*
 *.*~
+TestParsing.java
 
