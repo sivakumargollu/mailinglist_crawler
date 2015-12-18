@@ -12,7 +12,7 @@ import com.pramati.crawlers.MailingListDownLoader;
 	
 public class CrawlerProperties {
 
-	private String year = "2014";
+	private String year = "2015";
 	private String month = "00";
 	private String baseUrl = "https://mail-archives.apache.org/mod_mbox/maven-users/";
 	private String path = System.getProperty("user.home")+File.separator+"MavneMailingList";
