@@ -4,19 +4,22 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
+import com.pramati.crawlers.MailingListDownLoader;
 
-public class ConfigProperties {
+
+public class CrawlerProperties {
 
 	private String year = "2014";
-	private String month = "00	";
+	private String month = "00";
 	private String baseUrl = "https://mail-archives.apache.org/mod_mbox/maven-users/";
 	private String path = System.getProperty("user.home")+File.separator+"MavneMailingList";
 	private String mailUrl = "https://mail-archives.apache.org/mod_mbox/maven-users/";
 	
 	
-	private ConfigProperties(){
+	private CrawlerProperties(){
 		
 	}
 
@@ -107,31 +110,39 @@ public class ConfigProperties {
 
 	/**
 	 * 
-	 * @return ConfigProperties Reads cofig.properties file and populate the
-	 *         values in ConfigProperties If it fails to read the properties
+	 * @return CrawlerProperties Reads cofig.properties file and populate the
+	 *         values in CrawlerProperties If it fails to read the properties
 	 *         file then default values will be populated.
+	 * @throws IOException 
+	 * @throws FileNotFoundException 
 	 */
-	public static ConfigProperties getInstance() {
+	public static CrawlerProperties getInstance(){
 
-		ConfigProperties configProperties = new ConfigProperties();
+		CrawlerProperties crawlerProperties = new CrawlerProperties();
 		FileInputStream inputStream = null;
 		Properties properties = new Properties();
 		try {
-			inputStream = new FileInputStream("config.properties");
-			properties.load(inputStream);
+			 File jarPath=new File(CrawlerProperties.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+		     String propertiesPath=jarPath.getParentFile().getAbsolutePath();
+		     System.out.println(" propertiesPath-"+propertiesPath+"/crawler.properties");
+		     properties.load(new FileInputStream(propertiesPath+"/crawler.properties"));
+			
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			System.out.println("File not found exception");
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
-
-		configProperties.setMonth(properties.getProperty("month"));
-		configProperties.setYear(properties.getProperty("year"));
-		configProperties.setBaseUrl(properties.getProperty("baseUrl"));
-		configProperties.setMailUrl(properties.getProperty("mailUrl"));
-		//configProperties.setPath(properties.getProperty("logpath"));
-		return configProperties;
+		catch(NullPointerException e){ 
+			System.out.println(e.getMessage());
+		}
+		if(properties.getProperty("month") != null && properties.getProperty("month").trim() != "")
+		crawlerProperties.setMonth(properties.getProperty("month"));
+		if(properties.getProperty("year") != null && properties.getProperty("year").trim() != "")
+		crawlerProperties.setYear(properties.getProperty("year"));
+		if(properties.getProperty("logpath") != null && properties.getProperty("logpath").trim() != "")
+		crawlerProperties.setPath(properties.getProperty("logpath"));
+		return crawlerProperties;
 
 	}
 

@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jsoup.Jsoup;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -61,21 +62,21 @@ public class Utils {
 
 	/**
 	 * 
-	 * @param configProperties
+	 * @param crawlerProperties
 	 * @return ArrayList<String> Generates URLs in the given below format.
 	 *         "https://mail-archives.apache.org/mod_mbox/maven-users/YEARMONTH.mbox/ajax/thread"
 	 * 
 	 * 
 	 */
 	public static ArrayList<String> prepareTargetUrls(
-			ConfigProperties configProperties) {
-		String baseUrl = configProperties.getBaseUrl();
-		String[] months = configProperties.getMonth().split(",");
+			CrawlerProperties crawlerProperties) {
+		String baseUrl = crawlerProperties.getBaseUrl();
+		String[] months = crawlerProperties.getMonth().split(",");
 		ArrayList<String> urls = new ArrayList<String>(11);
 		//String url = "";
 		for (int i = 0; i < months.length; i++) {
 			if (months[i] != "" && !months[i].equals("") && months[i] != null)
-				urls.add(baseUrl + "/" + configProperties.getYear() + months[i]
+				urls.add(baseUrl + "/" + crawlerProperties.getYear() + months[i]
 						+ ".mbox/ajax/");
 		}
 		return urls;
@@ -167,6 +168,7 @@ public class Utils {
 		//	Conversation conversation = conversations.get(iterator.next()).getMails().size();
 			count += conversations.get(iterator.next()).getMails().size();
 		}
+		iterator = null;
 		return count;
 	}
 
@@ -197,6 +199,15 @@ public class Utils {
 	 */
 	public static boolean isValidMonth(String month) {
 		return month.matches("^[0][1-9]|^[1][0-2]");
+	}
+	/**
+	 * Convert html chars to proper text characters.
+	 * @param str
+	 * @return 
+	 * 
+	 */
+	public static String handlerHtmlChars(String str){
+		return Jsoup.parse(str).text();
 	}
 
 }

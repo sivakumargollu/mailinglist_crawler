@@ -55,8 +55,8 @@ public class Mail extends Crawlable {
 				latch.countDown();
 			}
 		}
-		System.out.println("In Mail Run By " + Thread.currentThread().getName()
-				+ " Count down" + latch.getCount());
+		System.out.println("Processing mail by " + Thread.currentThread().getName()
+				+ " ,Latch count " + latch.getCount()+"...");
 	}
 
 	/**

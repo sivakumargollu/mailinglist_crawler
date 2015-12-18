@@ -2,6 +2,7 @@
 package com.pramati.crawlers;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.ParseException;
@@ -16,15 +17,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import com.pramati.crawlers.beans.ConfigProperties;
+import com.pramati.crawlers.beans.CrawlerProperties;
 import com.pramati.crawlers.beans.Conversation;
 import com.pramati.crawlers.beans.Utils;
 
-/**
- *  It downloads mails from
+/**s
  *              "https://mail-archives.apache.org/mod_mbox/maven-users" and
  *              write mail-content in ".txt" files according to attribute values
- *              of given {@link ConfigProperties} instance. Mails are grouped by
+ *              of given {@link CrawlerProperties} instance. Mails are grouped by
  *              their subject,All mails with same subject will be saved under a
  *              directory. The name of the directory is equals to the subject
  *              and name of ".txt" file is the combination of mail-author
@@ -37,27 +37,27 @@ public class MailingListDownLoader {
 	private HashMap<String, Conversation> conversations = new HashMap<String, Conversation>();
 	private CountDownLatch latch = null;
 	static ExecutorService executorService = Executors.newFixedThreadPool(30);
-	ConfigProperties configProperties = null;
+	CrawlerProperties crawlerProperties = null;
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws FileNotFoundException, IOException {
 		
 		MailingListDownLoader crawler = new MailingListDownLoader();
-		ConfigProperties configProperties = ConfigProperties.getInstance();
+		CrawlerProperties crawlerProperties = CrawlerProperties.getInstance();
 		if(args.length > 0){
 			if(args[0] != "")
-				configProperties.setYear(args[0]);
+				crawlerProperties.setYear(args[0]);
 			if(args[1] != "")
-				configProperties.setMonth(args[1]);
+				crawlerProperties.setMonth(args[1]);
 			
 		}
 		System.out
-				.println("Message " + crawler.downLoadMails(configProperties));
+				.println("Message " + crawler.downLoadMails(crawlerProperties));
 	}
 
 	/**
 	 * 
-	 * @param configProperties
-	 *            {@link ConfigProperties} instance
+	 * @param crawlerProperties
+	 *            {@link CrawlerProperties} instance
 	 * @return String message describes the execution status.
 	 * Download mails and store them under given path as text
 	 *              files. The following operations will be taken place in the same
@@ -75,13 +75,15 @@ public class MailingListDownLoader {
 	 *              with the available data at that moment.
 	 * 
 	 */
-	public String downLoadMails(ConfigProperties configProperties) {
+	public String downLoadMails(CrawlerProperties crawlerProperties) {
 		String response = "Downloading and files creation completed!!!";
 		try {
-			System.out.println("Starting!!");
-			Utils.checkWritePermissions(configProperties.getPath());
+			System.out.println("Year--"+crawlerProperties.getYear());
+			System.out.println("Month--"+crawlerProperties.getMonth());
+			System.out.println("Path--"+crawlerProperties.getPath());
+			Utils.checkWritePermissions(crawlerProperties.getPath());
 			//MailingListDownLoader app = new MailingListDownLoader();
-			this.configProperties = configProperties;
+			this.crawlerProperties = crawlerProperties;
 			this.initiateCrawlingConversations();
 			System.out.println("Waiting to crawl conversations"+new Date().toString());
 			this.latch.await(30, TimeUnit.SECONDS);
@@ -89,7 +91,7 @@ public class MailingListDownLoader {
 			this.initiateCrawlingMails();
 			System.out.println("Waiting to crawl mails"+new Date().toString());
 			this.latch.await(120, TimeUnit.SECONDS);
-			this.logMails(configProperties.getPath());
+			this.logMails(crawlerProperties.getPath());
 		} catch (ParseException e) {
 			response = e.getMessage();
 			e.printStackTrace();
@@ -113,9 +115,9 @@ public class MailingListDownLoader {
 	 * 
 	 */
 	public void initiateCrawlingConversations() {
-		ConfigProperties configProperties = this.configProperties;
-		ArrayList<String> urls = Utils.prepareTargetUrls(configProperties);
-		String[] months = configProperties.getMonth().split(",");
+		CrawlerProperties crawlerProperties = this.crawlerProperties;
+		ArrayList<String> urls = Utils.prepareTargetUrls(crawlerProperties);
+		String[] months = crawlerProperties.getMonth().split(",");
 		latch = new CountDownLatch(urls.size());
 		for (int i = 0; i < months.length; i++) {
 			String month = months[i];
@@ -124,11 +126,11 @@ public class MailingListDownLoader {
 			try {
 
 				ConversationsBuilder conversationsBuilder = new ConversationsBuilder();
-				conversationsBuilder.setYear(configProperties.getYear());
+				conversationsBuilder.setYear(crawlerProperties.getYear());
 				conversationsBuilder.setMonth(month);
 				conversationsBuilder.setUrl(Utils.prepareTargetUrls(
-						configProperties.getBaseUrl(),
-						configProperties.getYear(), month));
+						crawlerProperties.getBaseUrl(),
+						crawlerProperties.getYear(), month));
 				conversationsBuilder.setConversations(conversations);
 				conversationsBuilder.latch = latch;
 				executorService.execute(conversationsBuilder);
@@ -170,7 +172,7 @@ public class MailingListDownLoader {
 				}
 				FileWriter fw = new FileWriter(file.getAbsoluteFile());
 				BufferedWriter bw = new BufferedWriter(fw);
-				bw.write(mail.getMailBody());
+				bw.write(Utils.handlerHtmlChars(mail.getMailBody()));
 				bw.close();
 
 			}
@@ -188,7 +190,8 @@ public class MailingListDownLoader {
 		System.out.println("Total mails are ..."+totalMails);
 		latch = new CountDownLatch(totalMails);
 		//To avoid concurrent modification exception on conversations hashmap.
-		Iterator<String> keyIterator = conversations.keySet().iterator();
+		HashMap<String,Conversation> dummy = new HashMap<String,Conversation>(conversations);
+		Iterator<String> keyIterator = dummy.keySet().iterator();
 		while(keyIterator.hasNext()) {
 			Conversation conversation = conversations.get(keyIterator.next());
 			HashSet<Mail> mails = conversation.getMails();
