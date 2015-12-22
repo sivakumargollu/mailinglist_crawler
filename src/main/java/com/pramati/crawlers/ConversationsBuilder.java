@@ -2,6 +2,8 @@ package com.pramati.crawlers;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -24,30 +26,32 @@ public class ConversationsBuilder extends Crawlable {
 	 * will converted to
 	 * "http://mail-archives.apache.org/mod_mbox/maven-users//201101.mbox/ajax/thread?1"
 	 * after this appending done to the url. It will get the response from the
-	 * remote web-site. 
-	 * pageCount value being updated with new value taken from remote-website.
+	 * remote web-site. pageCount value being updated with new value taken from
+	 * remote-website.
 	 * 
 	 */
+	static Logger logger = Logger.getLogger(ConversationsBuilder.class.getName());
+
 	public void run() {
 		boolean countDown = false;
 		try {
 			for (int pageno = 0; pageno < pagesCount; pageno++) {
-				Connection.Response response = this.getResponse(url
-						.concat("/thread?" + pageno));
+				Connection.Response response = this.getResponse(url.concat("/thread?" + pageno));
 				this.setConversations(response.body());
 			}
-			if (!countDown)
+			if (!countDown){
 				latch.countDown();
-			System.out
-					.println("Conversation latch count ::" + latch.getCount());
-		} catch (Exception e) {
-			e.printStackTrace();
+			}
+		} catch (Exception e) 
+		{
+			logger.log(Level.SEVERE, e.getMessage());
 			if (!countDown)
 				latch.countDown();
 		} finally {
 			if (!countDown)
 				latch.countDown();
 		}
+		//logger.log(Level.INFO,"Conversation latch count ::" + latch.getCount());
 
 	}
 
@@ -58,8 +62,6 @@ public class ConversationsBuilder extends Crawlable {
 	 */
 	public void setConversations(String xml) {
 		try {
-			// File f = new
-			// File("/home/sivag/Desktop/EclipseProjects/sampleXMl.xml");
 			InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory
 					.newInstance();
@@ -71,8 +73,6 @@ public class ConversationsBuilder extends Crawlable {
 				Node node = nodeList.item(i);
 				if (node.getNodeType() == Node.ELEMENT_NODE) {
 					Element e = (Element) node;
-					// System.out.println("page..." + e.getAttribute("page"));
-					// System.out.println("pages..." + e.getAttribute("pages"));
 					pagesCount = Integer.parseInt(e.getAttribute("pages"));
 					NodeList messages = e.getElementsByTagName("message");
 					for (int j = 0; j < messages.getLength(); j++) {
@@ -103,7 +103,7 @@ public class ConversationsBuilder extends Crawlable {
 
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.log(Level.SEVERE,e.getMessage());
 		}
 	}
 

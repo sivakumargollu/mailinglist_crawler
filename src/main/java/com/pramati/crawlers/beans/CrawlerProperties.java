@@ -4,10 +4,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import com.pramati.crawlers.MailingListDownLoader;
+
 
 	
 public class CrawlerProperties {
@@ -113,27 +114,36 @@ public class CrawlerProperties {
 	 * @return CrawlerProperties Reads cofig.properties file and populate the
 	 *         values in CrawlerProperties If it fails to read the properties
 	 *         file then default values will be populated.
+	 * @throws SecurityException 
 	 * @throws IOException 
 	 * @throws FileNotFoundException 
 	 */
-	public static CrawlerProperties getInstance(){
+	public static CrawlerProperties getInstance() {
 
 		CrawlerProperties crawlerProperties = new CrawlerProperties();
-		FileInputStream inputStream = null;
 		Properties properties = new Properties();
 		try {
 			 File jarPath=new File(CrawlerProperties.class.getProtectionDomain().getCodeSource().getLocation().getPath());
 		     String propertiesPath=jarPath.getParentFile().getAbsolutePath();
-		     System.out.println(" propertiesPath-"+propertiesPath+"/crawler.properties");
+		     Logger logger = Logger.getLogger(CrawlerProperties.class.getName());
+		     logger.log(Level.INFO,propertiesPath);
 		     properties.load(new FileInputStream(propertiesPath+"/crawler.properties"));
 			
 		} catch (FileNotFoundException e) {
-			System.out.println("Properties file not available,Contine with default settings");
+			Logger logger = Logger.getLogger(e.getClass().getName());
+			logger.log(Level.INFO,"Properties file not available,Contine with default settings");
 		} catch (IOException ioe) {
-			ioe.printStackTrace();
+			Logger logger = Logger.getLogger(ioe.getClass().getName());
+			logger.log(Level.INFO,ioe.getMessage());
+			
+		}
+		catch (SecurityException ioe) {
+			Logger logger = Logger.getLogger(ioe.getClass().getName());
+			logger.log(Level.INFO,ioe.getMessage());
 		}
 		catch(NullPointerException e){ 
-			System.out.println(e.getMessage());
+			Logger logger = Logger.getLogger(e.getClass().getName());
+			logger.log(Level.INFO,e.getMessage());
 		}
 		if(properties.getProperty("month") != null && properties.getProperty("month").trim() != "")
 		   crawlerProperties.setMonth(properties.getProperty("month"));

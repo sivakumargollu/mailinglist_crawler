@@ -3,6 +3,8 @@ package com.pramati.crawlers;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -32,12 +34,14 @@ public class Mail extends Crawlable {
 	private String time = "";
 	private String author = "";
 	private String mailBody = "";
+	static Logger logger = Logger.getLogger(Mail.class.getName());
 
 	public void run() {
 		boolean countDown = false;
 		try {
 			Connection.Response response = this.getResponse(this.url+this.getId());
-			this.setMailBody(this.extractMailBody(response.body()));
+			//this.setMailBody(this.extractMailBody(response.body()));
+			this.setMailBody(Utils.handlerHtmlChars(response.body()));
 			if (!countDown) {
 				latch.countDown();
 				countDown = true;
@@ -47,7 +51,8 @@ public class Mail extends Crawlable {
 				countDown = true;
 				latch.countDown();
 			}
-			e.printStackTrace();
+			Logger logger = Logger.getLogger(e.getClass().getName());
+			logger.log(Level.SEVERE,e.getMessage());
 
 		} finally {
 			if (!countDown) {
@@ -55,8 +60,8 @@ public class Mail extends Crawlable {
 				latch.countDown();
 			}
 		}
-		System.out.println("Processing mail by " + Thread.currentThread().getName()
-				+ " ,Latch count " + latch.getCount()+"...");
+	//	logger.addHandler(Utils.getFileHandler());
+		//logger.log(Level.INFO, "Processing mail by " + Thread.currentThread().getName()+ ",Latch count " + latch.getCount()+"...");
 	}
 
 	/**

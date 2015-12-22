@@ -1,4 +1,4 @@
-package com.pramati.crawlers;
+package com.pramati.crawlers.service;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -16,7 +16,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import com.pramati.crawlers.ConversationsBuilder;
+import com.pramati.crawlers.Mail;
 import com.pramati.crawlers.beans.CrawlerProperties;
 import com.pramati.crawlers.beans.Conversation;
 import com.pramati.crawlers.beans.Utils;
@@ -38,9 +42,10 @@ public class MailingListDownLoader {
 	private CountDownLatch latch = null;
 	static ExecutorService executorService = Executors.newFixedThreadPool(30);
 	CrawlerProperties crawlerProperties = null;
+	static Logger logger = Logger.getLogger(MailingListDownLoader.class.getName());
 
 	public static void main(String[] args) throws FileNotFoundException,IOException {
-		MailingListDownLoader crawler = new MailingListDownLoader();
+		MailingListDownLoader downloader = new MailingListDownLoader();
 		CrawlerProperties crawlerProperties = CrawlerProperties.getInstance();
 		int j = 1;
 		while (j <= args.length) {
@@ -50,8 +55,9 @@ public class MailingListDownLoader {
 				crawlerProperties.setYear(args[j-1]);
 			j++;
 		}
-		System.out.println("Message "
-				+ crawler.downLoadMails(crawlerProperties));
+		String response  = downloader.downLoadMails(crawlerProperties);
+		
+		
 	}
 
 	/**
@@ -76,37 +82,36 @@ public class MailingListDownLoader {
 	 * 
 	 */
 	public String downLoadMails(CrawlerProperties crawlerProperties) {
-		String response = "Downloading and files creation completed!!! Path :"
-				+ crawlerProperties.getPath();
+		//logger.addHandler(Utils.getFileHandler());
+		logger.log(Level.INFO,"Year--" + crawlerProperties.getYear());
+		logger.log(Level.INFO,"Month--" + crawlerProperties.getMonth());
+		logger.log(Level.INFO,"Path--" + crawlerProperties.getPath());
+		String response = "Path :"+ crawlerProperties.getPath();
 		try {
-			System.out.println("Year--" + crawlerProperties.getYear());
-			System.out.println("Month--" + crawlerProperties.getMonth());
-			System.out.println("Path--" + crawlerProperties.getPath());
+		
 			Utils.checkWritePermissions(crawlerProperties.getPath());
-			// MailingListDownLoader app = new MailingListDownLoader();
+			logger.addHandler(Utils.getFileHandler());
 			this.crawlerProperties = crawlerProperties;
 			this.initiateCrawlingConversations();
-			System.out.println("Waiting to crawl conversations"
-					+ new Date().toString());
+			logger.log(Level.INFO,"Waiting to crawl conversations"+ new Date().toString());
 			this.latch.await(30, TimeUnit.SECONDS);
-			System.out.println("Total conversations " + conversations.size());
+			logger.log(Level.INFO,"Total conversations " + conversations.size());
 			this.initiateCrawlingMails();
-			System.out
-					.println("Waiting to crawl mails" + new Date().toString());
+			logger.log(Level.INFO,"Waiting to crawl mails" + new Date().toString());
 			this.latch.await(120, TimeUnit.SECONDS);
 			this.logMails(crawlerProperties.getPath());
 		} catch (ParseException e) {
 			response = e.getMessage();
-			e.printStackTrace();
+			logger.log(Level.SEVERE,e.getMessage()+"\n"+e.getStackTrace().toString());
 		} catch (InterruptedException e) {
 			response = e.getMessage();
-			e.printStackTrace();
+			logger.log(Level.SEVERE,e.getMessage()+"\n"+e.getStackTrace().toString());
 		} catch (IOException e) {
 			response = e.getMessage();
-			e.printStackTrace();
+			logger.log(Level.SEVERE,e.getMessage()+"\n"+e.getStackTrace().toString());
 
 		}
-		System.out.println("Execution  status " + response);
+		logger.log(Level.SEVERE,"Execution  status " + response);
 		return response;
 	}
 
@@ -160,28 +165,19 @@ public class MailingListDownLoader {
 		for (Map.Entry<String, Conversation> entry : conversations.entrySet()) {
 			String subject = entry.getKey();
 			Conversation conversation = entry.getValue();
-			String conversationDirectory = path + File.separator
-					+ conversation.getYear() + File.separator
-					+ conversation.getMonth() + File.separator
-					+ Utils.replaceFileSystemChars(subject);
+			String conversationDirectory = path + File.separator+ conversation.getYear() + File.separator+ conversation.getMonth() + File.separator + Utils.replaceFileSystemChars(subject);
 			Utils.createDirectory(conversationDirectory);
-			// System.out.println(conversationDirectory);
-			// HashSet<Mail> mails = conversation.getMails();
 			Iterator<Mail> iterator = conversation.getMails().iterator();
 			while (iterator.hasNext()) {
 				Mail mail = iterator.next();
-				String fileName = conversationDirectory
-						+ File.separator
-						+ (Utils.replaceFileSystemChars(mail.getAuthor())
-								+ "__" + (mail.getTime())) + ".txt";
+				String fileName = conversationDirectory+ File.separator+ (Utils.replaceFileSystemChars(mail.getAuthor())+ "__" + (mail.getTime())) + ".txt";
 				File file = new File(fileName);
 				if (!file.exists()) {
-					// System.out.println(file);
 					file.createNewFile();
 				}
 				FileWriter fw = new FileWriter(file.getAbsoluteFile());
 				BufferedWriter bw = new BufferedWriter(fw);
-				bw.write(Utils.handlerHtmlChars(mail.getMailBody()));
+				bw.write(mail.getMailBody());
 				bw.close();
 
 			}

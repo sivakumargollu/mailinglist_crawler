@@ -2,11 +2,14 @@ package com.pramati.crawlers;
 
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 
 import com.pramati.crawlers.beans.Conversation;
+import com.pramati.crawlers.beans.Utils;
 
 /**
  * @author sivag
@@ -20,6 +23,7 @@ public abstract class Crawlable implements Runnable {
 	
 	protected String month = "";
 	protected String year = "";
+	static Logger logger = Logger.getLogger(Crawlable.class.getName());
 	
 
 	public String getMonth() {
@@ -51,7 +55,7 @@ public abstract class Crawlable implements Runnable {
 	 * Suppose there  are 500 mails available in month december and these 500 mails are arranged in 4 pages with pagination. Then this pageCount value holds that value 4
 	 */
 	protected int pagesCount = 3;
-	protected CountDownLatch latch = null;
+	public CountDownLatch latch = null;
 
 	/**
 	 * @return the url
@@ -91,6 +95,7 @@ public abstract class Crawlable implements Runnable {
 	 */
 
 	public Connection.Response getResponse(String url) {
+		logger.addHandler(Utils.getFileHandler());
 		Connection.Response response = null;
 		try {
 
@@ -104,8 +109,12 @@ public abstract class Crawlable implements Runnable {
 			connection.timeout(100000);
 			response = connection.execute();
 		} catch (Exception e) {
-			e.printStackTrace();
+			Logger  logger = Logger.getLogger(e.getClass().getName());
+			logger.log(Level.SEVERE,e.getMessage());
+			logger.log(Level.SEVERE,e.getStackTrace().toString());
+			
 		}
+		logger.log(Level.INFO,response.body());
 		return response;
 
 	}

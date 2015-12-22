@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,6 +26,13 @@ public class Utils {
 	static SimpleDateFormat dateFormat = new SimpleDateFormat(
 			"EEE, d MMM, h:mm");
 	static SimpleDateFormat dateFormat2 = new SimpleDateFormat("MMM-dd'_'HH:mm");
+	static SimpleDateFormat yyyymmdd = new SimpleDateFormat("yyyy-MM-dd:H:mm");
+	
+	static FileHandler fileHandler = null;
+	static CrawlerProperties crawlerProperties = null;
+	static{
+		 crawlerProperties = CrawlerProperties.getInstance();
+	}
 
 	/**
 	 * 
@@ -42,10 +52,10 @@ public class Utils {
 	 */
 	public static String replaceFileSystemChars(String str) {
 		String regEx = "";
-		if(SystemUtils.IS_OS_WINDOWS)
-			 regEx = "\\";
-		if(SystemUtils.IS_OS_LINUX)
-			 regEx = "(\\/)";
+		if (SystemUtils.IS_OS_WINDOWS)
+			regEx = "\\";
+		if (SystemUtils.IS_OS_LINUX)
+			regEx = "(\\/)";
 		return str.replaceAll(regEx, "_");
 	}
 
@@ -79,11 +89,11 @@ public class Utils {
 		String baseUrl = crawlerProperties.getBaseUrl();
 		String[] months = crawlerProperties.getMonth().split(",");
 		ArrayList<String> urls = new ArrayList<String>(11);
-		//String url = "";
+		// String url = "";
 		for (int i = 0; i < months.length; i++) {
 			if (months[i] != "" && !months[i].equals("") && months[i] != null)
-				urls.add(baseUrl + "/" + crawlerProperties.getYear() + months[i]
-						+ ".mbox/ajax/");
+				urls.add(baseUrl + "/" + crawlerProperties.getYear()
+						+ months[i] + ".mbox/ajax/");
 		}
 		return urls;
 	}
@@ -138,7 +148,7 @@ public class Utils {
 			if (!f.mkdirs())
 				throw new IOException(
 						"Could not create directory at given path");
-			
+
 		}
 		Utils.checkWritePermissions(path);
 		return created;
@@ -172,7 +182,8 @@ public class Utils {
 		int count = 0;
 		Iterator<String> iterator = conversations.keySet().iterator();
 		while (iterator.hasNext()) {
-		//	Conversation conversation = conversations.get(iterator.next()).getMails().size();
+			// Conversation conversation =
+			// conversations.get(iterator.next()).getMails().size();
 			count += conversations.get(iterator.next()).getMails().size();
 		}
 		iterator = null;
@@ -182,14 +193,13 @@ public class Utils {
 	/**
 	 * 
 	 * @param subject
-	 * @return Subject is the unique for all mails of a conversation. Except that
-	 *         replies mails contains Re: in the starting. This function will
-	 *         remove the "Re:" or "re:" or "RE:" patterns in the starting and
-	 *         returns the remaining string after trimming white spaces
+	 * @return Subject is the unique for all mails of a conversation. Except
+	 *         that replies mails contains Re: in the starting. This function
+	 *         will remove the "Re:" or "re:" or "RE:" patterns in the starting
+	 *         and returns the remaining string after trimming white spaces
 	 */
 	public static String nomalizeSubject(String subject) {
 
-		
 		String regEx = "(\\s*re\\s*:\\s*)|(\\s*RE\\s*:\\s*)|(\\s*Re\\s*:\\s*)";
 		Pattern pattern = Pattern.compile(regEx);
 		Matcher matcher = pattern.matcher(subject);
@@ -208,14 +218,30 @@ public class Utils {
 	public static boolean isValidMonth(String month) {
 		return month.matches("^[0][1-9]|^[1][0-2]");
 	}
+
 	/**
 	 * Convert html chars to proper text characters.
+	 * 
 	 * @param str
-	 * @return 
+	 * @return
 	 * 
 	 */
-	public static String handlerHtmlChars(String str){
+	public static String handlerHtmlChars(String str) {
 		return Jsoup.parse(str).text();
 	}
 
+	public static FileHandler getFileHandler() {
+			
+		try {
+			if (fileHandler == null || !(fileHandler instanceof FileHandler))
+				
+				fileHandler = new FileHandler(crawlerProperties.getPath()+ File.separator + crawlerProperties.getYear()+ yyyymmdd.format(new Date()));
+		} catch (Exception e) {
+		
+			Logger logger = Logger.getLogger(e.getClass().getName());
+			logger.log(Level.SEVERE, e.getMessage());
+		}
+		return fileHandler;
+
+	}
 }
